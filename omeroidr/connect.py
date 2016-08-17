@@ -6,21 +6,6 @@ import requests
 import getpass
 from omeroidr.constants import API_LOGIN, API_LOGOUT
 
-# def connect_to_omero():
-
-#     session = requests.Session()
-
-#     login_url = "http://localhost:4080/webclient/login/"
-#     r = session.get(login_url)
-#     token = r.cookies['csrftoken']
-#     session.headers.update({'X-CSRFToken': token})
-
-#     # Login with username, password and server
-#     payload = {'username': 'will',
-#            'password': 'ome',
-#            'server': 1}
-#     r = session.post(login_url, data=payload)
-
 def connect_to_omero(base_url: str, user: str, password: str):
 
     session = requests.Session()
