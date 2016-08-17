@@ -3,6 +3,9 @@
 """
 API Endpoints
 """
+# Login/logout
+API_LOGIN = '/webclient/login/'
+API_LOGOUT = '/webclient/logout/'
 # List of all plates
 API_PLATES = '/webclient/api/plates/?id={screenId}'
 # List of all wells in a plate

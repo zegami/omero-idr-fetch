@@ -1,5 +1,5 @@
 """
-Grab images from OMERO IDR demo based on Screen data
+Grab images from OMERO based on Screen data
 """
 
 import csv
@@ -8,15 +8,20 @@ import progressbar
 import signal
 import sys
 import time
+import requests
+import json
+import getpass
 from argparse import ArgumentParser
 from collections import OrderedDict
-
 from omeroidr.images import Images
+import omeroidr.connect as connect
 
-parser = ArgumentParser(prog='OMERO IDR screen image downloader')
+parser = ArgumentParser(prog='OMERO screen image downloader')
 parser.add_argument('-o', '--output', help='Path to the output images directory')
-parser.add_argument('-d', '--data', required=False, default='idr.tab', help='Path to the data source')
-parser.add_argument('-u', '--url', required=False, default='http://idr-demo.openmicroscopy.org', help='Base url for OMERO server')
+parser.add_argument('-d', '--data', required=False, default='omero.tab', help='Path to the data source')
+parser.add_argument('-s', '--server', required=False, default='http://idr-demo.openmicroscopy.org', help='Base url for OMERO server')
+parser.add_argument('-u', '--user', required=False, help='OMERO Username')
+parser.add_argument('-w', '--password', required=False, help='OMERO Password')
 
 pargs = parser.parse_args()
 
@@ -43,7 +48,10 @@ def download_image_callback(val):
 
 
 def main():
-    omero_images = Images(pargs.url, pargs.output)
+    # login
+    session = connect.connect_to_omero(pargs.server, pargs.user, pargs.password)
+
+    omero_images = Images(session, pargs.server, pargs.output)
 
     # open tab metadata file
     with open(pargs.data, 'r') as csv_file:
@@ -71,6 +79,7 @@ def main():
     except KeyboardInterrupt:
         p.terminate()
         p.join()
+        disconnect(session, pargs.server)
         print('exiting...')
         sys.exit(0)
     finally:
@@ -78,6 +87,7 @@ def main():
         p.join()
         pbar.finish()
 
+    connect.disconnect(session, pargs.server)
     print('Image fetch complete')
 
 if __name__ == '__main__':
