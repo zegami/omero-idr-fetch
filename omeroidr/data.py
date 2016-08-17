@@ -1,29 +1,30 @@
 import json
-import urllib.request
+import requests
 from omeroidr.constants import API_WELL_ANNOTATIONS, API_WELL_ANNOTATION_TYPES, API_PLATE, API_PLATES, API_WELL_TABLES
 
-
 class Data:
-
-    def __init__(self, base_url: str):
+    def __init__(self, session, base_url: str):
         """
         Utils for fetching OMERO data
 
         :param base_url: The base URL of the OMERO server
         """
         self.base_url = base_url
+        self.session = session
 
-    @staticmethod
-    def get_json(url: str) -> dict:
+#    @staticmethod
+    def get_json(self, url: str) -> dict:
         """
         Get response object for a URL and return JSON object
 
         :param url: The URL of the endpoint to retrieve
         :return: Dict representing the JSON object
         """
-        request = urllib.request.Request(url)
-        response = urllib.request.urlopen(request)
-        return json.loads(response.read().decode('utf-8'))
+#        request = urllib.request.Request(url)
+#        response = urllib.request.urlopen(request)
+#        return json.loads(response.read().decode('utf-8'))
+        r = self.session.get(url)
+        return r.json()
 
     def get_wells(self, screen_id: int) -> list:
         """
@@ -46,16 +47,17 @@ class Data:
             for rIdx, rows in enumerate(plate_data['grid']):
                 for wIdx, well in enumerate(rows):
                     # construct well object and return
-                    wells.append({
-                        'id': well['id'],
-                        'name': well['name'],
-                        'date': well['date'],
-                        'author': well['author'],
-                        'field': well['field'],
-                        'wellId': well['wellId'],
-                        'column': plate_data['collabels'][wIdx],
-                        'row': plate_data['rowlabels'][rIdx]
-                    })
+                    if (well != None):
+                        wells.append({
+                            'id': well['id'],
+                            'name': well['name'],
+                            'date': well['date'],
+                            'author': well['author'],
+                            'field': well['field'],
+                            'wellId': well['wellId'],
+                            'column': plate_data['collabels'][wIdx],
+                            'row': plate_data['rowlabels'][rIdx]
+                         })
         return wells
 
     def get_well_details(self, well: dict) -> dict:

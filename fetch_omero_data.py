@@ -1,5 +1,5 @@
 """
-Grab screen data from OMERO IDR demo based on Screen ID
+Grab screen data from OMERO based on Screen ID
 """
 
 import csv
@@ -8,13 +8,18 @@ import progressbar
 import signal
 import sys
 import time
+import requests
+import json
 from argparse import ArgumentParser
+import omeroidr.connect as connect
 from omeroidr.data import Data
 
-parser = ArgumentParser(prog='OMERO IDR screen data downloader')
+parser = ArgumentParser(prog='OMERO screen data downloader')
 parser.add_argument('-i', '--id', help='Id of the screen')
-parser.add_argument('-o', '--output', required=False, default='idr.tab', help='Path to the tab serparated output file')
-parser.add_argument('-u', '--url', required=False, default='http://idr-demo.openmicroscopy.org', help='Base url for OMERO server')
+parser.add_argument('-o', '--output', required=False, default='omero.tab', help='Path to the tab separated output file')
+parser.add_argument('-s', '--server', required=False, default='http://idr-demo.openmicroscopy.org', help='Base url for OMERO server')
+parser.add_argument('-u', '--user', required=False, help='OMERO Username')
+parser.add_argument('-w', '--password', required=False, help='OMERO Password')
 
 pargs = parser.parse_args()
 
@@ -45,8 +50,11 @@ def well_details_callback(well):
 
 
 def main():
+    # login
+    session = connect.connect_to_omero(pargs.server, pargs.user, pargs.password)
+
     # init data    
-    omero_data = Data(pargs.url)
+    omero_data = Data(session, pargs.server)
 
     # get wells for screen
     print('loading plates...')
@@ -68,6 +76,7 @@ def main():
     except KeyboardInterrupt:
         p.terminate()
         p.join()
+        disconnect(session, pargs.server)
         print('exiting...')
         sys.exit(0)
     finally:
@@ -91,7 +100,9 @@ def main():
         w = csv.DictWriter(output, columns, delimiter='\t', lineterminator='\n')
         w.writeheader()
         w.writerows(wells_sorted)
+    output.close()
 
+    connect.disconnect(session, pargs.server)
     print('Metadata fetch complete')
 
 if __name__ == '__main__':
