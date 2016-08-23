@@ -1,6 +1,6 @@
 import json
 import requests
-from omeroidr.constants import API_WELL_ANNOTATIONS, API_WELL_ANNOTATION_TYPES, API_PLATE, API_PLATES, API_WELL_TABLES
+from omeroidr.constants import API_WELL_ANNOTATIONS, API_WELL_ANNOTATION_TYPES, API_PLATE, API_PLATES, API_WELL_TABLES, API_IMAGE_DATA
 
 class Data:
     def __init__(self, session, base_url: str):
@@ -90,3 +90,20 @@ class Data:
 
         # merge annotations
         return dict(well, **annotations)
+
+
+    def get_imagedata(self, image_id: int) -> dict:
+        """
+        Get all the associated metadata for an OMERO image
+
+        :param image_id: The id of the image to fetch metadata
+        :return: Dict of the image metadata
+        """
+        # set empty output
+        d_json = None
+
+        # get image metadata
+        url = self.base_url + API_IMAGE_DATA.format(id=image_id)
+        d_json = self.get_json(url)
+        # output
+        return(d_json)
